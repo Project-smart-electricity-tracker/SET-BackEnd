@@ -36,7 +36,7 @@ func LoadConfig() (*Config, error) {
 	viper.BindEnv("database.user", "DB_USER")
 	viper.BindEnv("database.password", "DB_PASSWORD")
 	viper.BindEnv("database.dbname", "DB_NAME")
-	viper.BindEnv("jwt_secret", "JWT_SECRET")
+	viper.BindEnv("JWTSecret", "JWT_SECRET")
 	viper.BindEnv("power_meter.device", "POWER_METER_DEVICE")
 
 	if err := viper.ReadInConfig(); err != nil {

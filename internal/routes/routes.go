@@ -52,7 +52,7 @@ func Setup(app *fiber.App, cfg *config.Config, db *gorm.DB) {
 	api.Post("/login", userHandler.Login)
 	api.Post("/logout", userHandler.Logout)
 	api.Post("/refresh-Token", userHandler.RefreshToken)
-	api.Get("/check-token", authMiddleware.Authenticate())
+	api.Get("/check-token", authMiddleware.Authenticate(), userHandler.CheckToken)
 	// api.Post("/register", userHandler.Register)
 
 	// // Electricity Bill

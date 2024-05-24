@@ -5,10 +5,12 @@ import (
 	"smart_electricity_tracker_backend/internal/config"
 	"smart_electricity_tracker_backend/internal/helpers"
 	"smart_electricity_tracker_backend/internal/models"
+	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/log"
 )
 
 type AuthMiddlewareService struct {
@@ -21,29 +23,28 @@ func NewAuthMiddleware(cfg *config.Config) *AuthMiddlewareService {
 
 func (s *AuthMiddlewareService) Authenticate() fiber.Handler {
 	return func(c *fiber.Ctx) error {
+		claims := &models.Claims{}
 		tokenString := c.Get("Authorization")
-		if tokenString == "" {
-			return helpers.ErrorResponse(c, fiber.StatusUnauthorized, "Unauthorized")
-		}
+		tokenString = strings.TrimPrefix(tokenString, "Bearer ")
 
-		token, err := jwt.ParseWithClaims(tokenString, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 			return []byte(s.cfg.JWTSecret), nil
 		})
 		if err != nil {
+			log.Infof("Error: %v", err)
+			return helpers.ErrorResponse(c, fiber.StatusUnauthorized, "Unauthorized")
+		}
+		if !token.Valid {
+			log.Infof("Error: %v", err)
 			return helpers.ErrorResponse(c, fiber.StatusUnauthorized, "Unauthorized")
 		}
 
-		claims, ok := token.Claims.(*jwt.StandardClaims)
-		if !ok || !token.Valid {
-			return helpers.ErrorResponse(c, fiber.StatusUnauthorized, "Unauthorized")
-		}
-
-		if claims.ExpiresAt < time.Now().Unix() {
+		if claims.Exp.Before(time.Now()) {
 			return helpers.ErrorResponse(c, fiber.StatusUnauthorized, "Token expired")
 		}
 
-		c.Locals("user_id", claims.Subject)
-		c.Locals("role", claims.Issuer)
+		c.Locals("user_id", claims.UserID)
+		c.Locals("role", claims.Role)
 
 		return c.Next()
 	}

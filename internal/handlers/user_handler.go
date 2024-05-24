@@ -106,3 +106,11 @@ func (h *UserHandler) Logout(c *fiber.Ctx) error {
 		fiber.Map{},
 	)
 }
+
+func (h *UserHandler) CheckToken(c *fiber.Ctx) error {
+	return helpers.SuccessResponse(c,
+		fiber.StatusOK,
+		"Token valid",
+		fiber.Map{},
+	)
+}

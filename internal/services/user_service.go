@@ -37,12 +37,12 @@ func (s *UserService) GenerateTokens(user *models.User) (string, string, error) 
 }
 
 func (s *UserService) createAccessToken(user *models.User) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		// "user_id":  user.ID,
-		"username": user.Username,
-		"name":     user.Name,
-		"role":     user.Role,
-		"exp":      time.Now().Add(s.accessTokenDuration),
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, models.Claims{
+		UserID:   user.ID.String(),
+		Username: user.Username,
+		Name:     user.Name,
+		Role:     user.Role,
+		Exp:      time.Now().Add(s.accessTokenDuration),
 	})
 
 	return token.SignedString([]byte(s.jwtSecret))
